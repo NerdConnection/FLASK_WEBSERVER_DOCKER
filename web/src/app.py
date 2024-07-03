@@ -1,11 +1,49 @@
-from flask import Flask, url_for, redirect, render_template, request
+from flask import Flask, url_for, redirect, render_template, request, jsonify
+import docker
 from post_data import posts
+
 last_id = posts[-1]['id']
 app = Flask(__name__, static_url_path='/static')
-
+client = docker.from_env()
 @app.route('/')
 def home():
     return render_template("index.html")
+
+
+
+@app.route('/container1', methods = ['POST','GET'])
+def container1():
+    if(request.method == "POST"):
+        model_id = request.json['model_id']  # 클라이언트가 전송한 모델 ID
+        try:
+            # 모델 ID에 따라 적절한 Docker 이미지를 실행
+            container = client.containers.run(model_id, command="python /app/test.py", detach=True)
+
+            # 여기서 컨테이너의 IP 주소 등을 반환하여 P2P 연결에 사용할 수 있음
+            
+            #로그 가져오기
+            logs = container.logs()
+            print(logs.decode('utf-8'))
+
+            # 컨테이너가 종료될 때까지 대기 후 정지, 삭제
+            container.wait()
+            container.stop()
+            container.remove()
+            
+            
+            return jsonify({'status': 'success', 'logs': logs.decode('utf-8')})
+        except Exception as e:
+                return jsonify({'status': 'error', 'message': str(e)})
+    return render_template("container1.html")
+
+
+
+
+
+
+
+
+
 
 @app.route('/about_me')
 def about_me():

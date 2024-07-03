@@ -1,0 +1,47 @@
+<!-- container1.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container 1</title>
+</head>
+<body>
+    <h1>Container 1</h1>
+    
+    <form id="modelForm" method="POST">
+        <label for="model_id">Select Model ID:</label>
+        <input type="text" id="model_id" name="model_id" required>
+        <button type="submit">Run Model</button>
+    </form>
+
+    <div id="status"></div>
+
+    <script>
+        // AJAX 요청 처리
+        document.getElementById("modelForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var modelId = document.getElementById("model_id").value;
+
+            fetch("/container1", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ model_id: modelId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("status").textContent = data.status;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+    <p><a href="{{ url_for('home') }}">home</a></p>
+
+</body>
+</html>
